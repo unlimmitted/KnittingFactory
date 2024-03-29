@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: knitting-factory-mes
+  datasource:
+    url: jdbc:postgresql://localhost:5432/knitting_factory?currentSchema=knitting_factory_mes
+    username: postgres
+    password: postgres
