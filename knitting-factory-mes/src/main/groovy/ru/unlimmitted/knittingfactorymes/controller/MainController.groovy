@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import ru.unlimmitted.knittingfactorymes.entity.Recipe
+import ru.unlimmitted.knittingfactorymes.entity.Product
 import ru.unlimmitted.knittingfactorymes.repository.MainRepository
 
 @RestController
@@ -23,14 +23,20 @@ class MainController {
 		return ResponseEntity.ok().body(repository.getAllMaterials())
 	}
 
-//	@GetMapping("/get-material")
-//	ResponseEntity<Object> getMaterial(){
-//		return ResponseEntity.ok().body(repository.getMaterial())
-//	}
+	@GetMapping("/get-material")
+	ResponseEntity<Object> getMaterial(){
+		return ResponseEntity.ok().body(repository.getMaterialInWarehouse())
+	}
 
 	@PostMapping("/create-recipe")
-	ResponseEntity<Object> createRecipe(@RequestBody Recipe newRecipe){
-
+	ResponseEntity<Object> createRecipe(@RequestBody Product newRecipe){
+		repository.insertRecipe(newRecipe)
 		return ResponseEntity.status(HttpStatus.NO_CONTENT).build()
+	}
+
+	@GetMapping("/get-all-recipe")
+	ResponseEntity<Object> getAllRecipe(){
+		repository.getAllRecipes()
+		return ResponseEntity.ok().body(repository.getAllRecipes())
 	}
 }

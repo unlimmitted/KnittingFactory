@@ -1,15 +1,19 @@
 package ru.unlimmitted.knittingfactorymes.entity
 
-import jakarta.persistence.Entity
 import jakarta.persistence.Id
-import lombok.Builder
 
-@Builder
 class Recipe {
 	@Id
 	Long id
 
-	String name
+	Long material_id
 
-	List<Material> material
+	Integer quantity
+
+	Long recipe_id
+
+	@Override
+	public String toString() {
+		return "Recipe{id=$id, material_id=$material_id, quantity=$quantity, recipe_id=$recipe_id'}'"
+	}
 }

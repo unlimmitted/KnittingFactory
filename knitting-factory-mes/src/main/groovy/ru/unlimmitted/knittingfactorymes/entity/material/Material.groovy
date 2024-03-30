@@ -1,6 +1,6 @@
-package ru.unlimmitted.knittingfactorymes.entity
+package ru.unlimmitted.knittingfactorymes.entity.material
 
-import jakarta.persistence.Entity
+
 import jakarta.persistence.Id
 
 
@@ -11,5 +11,7 @@ class Material {
 	String name
 
 	MaterialType type
+
+	String typeName
 
 }
