@@ -1,4 +1,4 @@
-package ru.unlimmitted.knittingfactorymes.entity
+package ru.unlimmitted.knittingfactorymes.entity.recipe
 
 import jakarta.persistence.Id
 

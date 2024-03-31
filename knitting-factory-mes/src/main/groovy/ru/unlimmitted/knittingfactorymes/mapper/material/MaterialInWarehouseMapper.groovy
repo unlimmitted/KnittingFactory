@@ -1,4 +1,4 @@
-package ru.unlimmitted.knittingfactorymes.mapper
+package ru.unlimmitted.knittingfactorymes.mapper.material
 
 import org.springframework.jdbc.core.RowMapper
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse

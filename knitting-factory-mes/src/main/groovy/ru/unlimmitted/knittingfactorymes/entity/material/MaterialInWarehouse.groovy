@@ -11,4 +11,6 @@ class MaterialInWarehouse {
 
 	StringBuilder typeName = new StringBuilder()
 
+	Double price = 0.01d
+
 }

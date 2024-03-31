@@ -1,4 +1,4 @@
-package ru.unlimmitted.knittingfactorymes.mapper
+package ru.unlimmitted.knittingfactorymes.mapper.material
 
 import org.springframework.jdbc.core.RowMapper
 import ru.unlimmitted.knittingfactorymes.entity.material.Material
@@ -15,6 +15,7 @@ class MaterialMapper  implements RowMapper<Material> {
 		material.id = rs.getLong("id")
 		material.name = rs.getString("name")
 		material.type = MaterialType.values().find{it.ordinal() == rs.getLong("type")}
+		material.price = rs.getDouble("price")
 		material.typeName = material.type.typeName
 
 		return material

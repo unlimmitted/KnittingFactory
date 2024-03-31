@@ -6,12 +6,14 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import ru.unlimmitted.knittingfactorymes.entity.material.Material
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse
-import ru.unlimmitted.knittingfactorymes.entity.Product
+import ru.unlimmitted.knittingfactorymes.entity.product.Product
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialType
-import ru.unlimmitted.knittingfactorymes.mapper.MaterialInWarehouseMapper
-import ru.unlimmitted.knittingfactorymes.mapper.MaterialJoinRecipeMapper
-import ru.unlimmitted.knittingfactorymes.mapper.MaterialMapper
-import ru.unlimmitted.knittingfactorymes.mapper.ProductMapper
+import ru.unlimmitted.knittingfactorymes.entity.product.ProductInWarehouse
+import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialInWarehouseMapper
+import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialJoinRecipeMapper
+import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialMapper
+import ru.unlimmitted.knittingfactorymes.mapper.product.ProductInWarehouseMapper
+import ru.unlimmitted.knittingfactorymes.mapper.product.ProductMapper
 
 @Repository
 class MainRepository {
@@ -24,7 +26,7 @@ class MainRepository {
 
 	List<MaterialInWarehouse> getMaterialInWarehouse() {
 		List<MaterialInWarehouse> materials = template.query(
-				"SELECT * FROM quantity_materials", new MaterialInWarehouseMapper())
+				"SELECT * FROM materials_in_warehouse", new MaterialInWarehouseMapper())
 		for (material in materials) {
 			material.name.append(template.queryForObject(
 					"SELECT name FROM material WHERE id = ${material.id}", String.class)
@@ -35,8 +37,26 @@ class MainRepository {
 								"SELECT type FROM material WHERE id = ${material.id}", String.class)).toInteger()
 					}).typeName
 			)
+			material.price = material.quantity * template.queryForObject(
+					"SELECT price FROM material WHERE id = ${material.id}", String.class).toDouble()
 		}
 		return materials
+	}
+
+	List<ProductInWarehouse> getProductInWarehouse() {
+		List<ProductInWarehouse> products = template.query(
+				"SELECT * FROM products_in_warehouse WHERE quantity != 0",
+				new ProductInWarehouseMapper())
+		for (product in products) {
+			product.name.append(
+					template.queryForObject(
+							"SELECT name FROM product WHERE id = ${product.productId}", String.class)
+			)
+			product.price = template.queryForObject(
+					"SELECT price FROM product WHERE id = ${product.productId}",
+					Double.class)
+		}
+		return products
 	}
 
 	List<Product> getAllRecipes() {
@@ -48,6 +68,9 @@ class MainRepository {
 							|JOIN material mat on mat.id = rec.material_id
 							|WHERE product_id = $product.id
 							""".stripMargin(), new MaterialJoinRecipeMapper()))
+			product.price = template.queryForObject(
+					"SELECT price FROM product WHERE id = ${product.id}",
+					Double.class)
 		}
 		return products
 	}
@@ -63,5 +86,19 @@ class MainRepository {
 							|VALUES (${material.material_id}, ${material.quantity}, $product_id) 
 							""".stripMargin())
 		}
+		for (recipe in product.recipes){
+			List<Material> materials = template.query(
+					"SELECT * FROM material WHERE id = ${recipe.material_id}", new MaterialMapper())
+			Integer index = 0
+			for (material in materials){
+				template.update("""
+							|UPDATE product 
+							|SET price = ${product.recipes.quantity[index] * material.price}
+							|WHERE id = ${product_id}
+							""".stripMargin())
+			}
+
+		}
+
 	}
 }

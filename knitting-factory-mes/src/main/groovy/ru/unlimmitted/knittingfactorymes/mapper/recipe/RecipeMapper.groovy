@@ -1,8 +1,7 @@
-package ru.unlimmitted.knittingfactorymes.mapper
+package ru.unlimmitted.knittingfactorymes.mapper.recipe
 
 import org.springframework.jdbc.core.RowMapper
-import ru.unlimmitted.knittingfactorymes.entity.Product
-import ru.unlimmitted.knittingfactorymes.entity.Recipe
+import ru.unlimmitted.knittingfactorymes.entity.recipe.Recipe
 
 import java.sql.ResultSet
 import java.sql.SQLException
