@@ -12,7 +12,7 @@ class MaterialInWarehouseMapper  implements RowMapper<MaterialInWarehouse> {
 	MaterialInWarehouse mapRow(ResultSet rs, int rowNum) throws SQLException {
 		def materials = new MaterialInWarehouse()
 		materials.id = rs.getLong("id")
-		materials.quantity = rs.getInt("quantity")
+		materials.quantity = rs.getBigDecimal("quantity")
 		materials.material_id = rs.getLong("material_id")
 
 		return materials

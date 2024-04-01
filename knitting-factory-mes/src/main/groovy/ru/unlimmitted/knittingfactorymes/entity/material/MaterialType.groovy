@@ -2,10 +2,11 @@ package ru.unlimmitted.knittingfactorymes.entity.material
 
 enum MaterialType {
 
-	NATURAL_FABRIC("Натуральная ткань"),
-	SYNTHETIC_FABRIC("Синтетическая ткань"),
-	PAINT("Краска"),
-	MEASURED_QUANTITIES("Мерный материал")
+	NATURAL_FABRIC("Полотна"),
+	PAINT("Краски"),
+	FINISHING("Отделочные"),
+	THREAD("Нитки"),
+	ELASTIC_BAND("Резинки")
 
 	String typeName
 

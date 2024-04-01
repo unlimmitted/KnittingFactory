@@ -14,6 +14,10 @@ class Material {
 
 	String typeName
 
-	Double price
+	BigDecimal price
+
+	MaterialUnit unit
+
+	String unitName
 
 }

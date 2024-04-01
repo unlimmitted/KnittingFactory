@@ -1,9 +1,8 @@
 package ru.unlimmitted.knittingfactorymes.entity.product
 
-
 import jakarta.persistence.Id
 import lombok.Builder
-import ru.unlimmitted.knittingfactorymes.entity.recipe.Recipe
+import ru.unlimmitted.knittingfactorymes.entity.material.MaterialJoinRecipe
 
 @Builder
 class Product {
@@ -12,9 +11,9 @@ class Product {
 
 	String name
 
-	List<Recipe> recipes = new ArrayList<>()
+	List<MaterialJoinRecipe> recipes = new ArrayList<MaterialJoinRecipe>()
 
-	Double price = 0.01d
+	BigDecimal price = 0.01d
 
 	@Override
 	public String toString() {

@@ -13,7 +13,7 @@ class RecipeMapper implements RowMapper<Recipe> {
 		def recipe = new Recipe()
 		recipe.id = rs.getLong("id")
 		recipe.material_id = rs.getLong("material_id")
-		recipe.quantity = rs.getInt("quantity")
+		recipe.quantity = rs.getBigDecimal("quantity")
 		recipe.recipe_id = rs.getLong("product_id")
 		return recipe
 	}

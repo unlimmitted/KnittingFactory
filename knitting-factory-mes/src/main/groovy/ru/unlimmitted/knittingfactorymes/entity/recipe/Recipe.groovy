@@ -8,7 +8,7 @@ class Recipe {
 
 	Long material_id
 
-	Integer quantity
+	BigDecimal quantity = new BigDecimal()
 
 	Long recipe_id
 

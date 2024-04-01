@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import ru.unlimmitted.knittingfactorymes.entity.material.Material
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse
+import ru.unlimmitted.knittingfactorymes.entity.material.MaterialUnit
 import ru.unlimmitted.knittingfactorymes.entity.product.Product
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialType
 import ru.unlimmitted.knittingfactorymes.entity.product.ProductInWarehouse
@@ -14,6 +15,8 @@ import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialJoinRecipeMappe
 import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialMapper
 import ru.unlimmitted.knittingfactorymes.mapper.product.ProductInWarehouseMapper
 import ru.unlimmitted.knittingfactorymes.mapper.product.ProductMapper
+
+import java.math.RoundingMode
 
 @Repository
 class MainRepository {
@@ -32,13 +35,20 @@ class MainRepository {
 					"SELECT name FROM material WHERE id = ${material.id}", String.class)
 			)
 			material.typeName.append(
-					(MaterialType.values().find{
+					(MaterialType.values().find {
 						it.ordinal() == (template.queryForObject(
-								"SELECT type FROM material WHERE id = ${material.id}", String.class)).toInteger()
+								"SELECT type FROM material WHERE id = ${material.id}", Integer.class))
 					}).typeName
 			)
+			material.unitName.append(
+					(MaterialUnit.values().find {
+						it.ordinal() == (template.queryForObject(
+								"SELECT unit FROM material WHERE id ${material.id}", Integer.class)
+						)
+					}).unitName
+			)
 			material.price = material.quantity * template.queryForObject(
-					"SELECT price FROM material WHERE id = ${material.id}", String.class).toDouble()
+					"SELECT price FROM material WHERE id = ${material.id}", BigDecimal.class)
 		}
 		return materials
 	}
@@ -54,7 +64,7 @@ class MainRepository {
 			)
 			product.price = template.queryForObject(
 					"SELECT price FROM product WHERE id = ${product.productId}",
-					Double.class)
+					BigDecimal.class)
 		}
 		return products
 	}
@@ -63,14 +73,14 @@ class MainRepository {
 		List<Product> products = template.query("SELECT * FROM product", new ProductMapper())
 		for (product in products) {
 			product.recipes.addAll(template.query("""
-							|SELECT mat.name, rec.quantity , mat.type
+							|SELECT mat.name, mat.id as "material_id", rec.quantity, mat.type, mat.unit
 							|FROM recipe rec
 							|JOIN material mat on mat.id = rec.material_id
 							|WHERE product_id = $product.id
 							""".stripMargin(), new MaterialJoinRecipeMapper()))
 			product.price = template.queryForObject(
 					"SELECT price FROM product WHERE id = ${product.id}",
-					Double.class)
+					BigDecimal.class).setScale(2, RoundingMode.CEILING)
 		}
 		return products
 	}
@@ -86,19 +96,16 @@ class MainRepository {
 							|VALUES (${material.material_id}, ${material.quantity}, $product_id) 
 							""".stripMargin())
 		}
-		for (recipe in product.recipes){
-			List<Material> materials = template.query(
-					"SELECT * FROM material WHERE id = ${recipe.material_id}", new MaterialMapper())
-			Integer index = 0
-			for (material in materials){
-				template.update("""
+		BigDecimal price = 0
+		for (recipe in product.recipes) {
+			price += (recipe.quantity * template.queryForObject(
+					"SELECT price FROM material WHERE id = ${recipe.material_id}",
+					BigDecimal.class))
+		}
+		template.update("""
 							|UPDATE product 
-							|SET price = ${product.recipes.quantity[index] * material.price}
+							|SET price = ${price.setScale(2, RoundingMode.CEILING)}
 							|WHERE id = ${product_id}
 							""".stripMargin())
-			}
-
-		}
-
 	}
 }

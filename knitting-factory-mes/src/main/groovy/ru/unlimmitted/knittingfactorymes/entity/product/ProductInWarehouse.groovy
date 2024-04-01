@@ -6,5 +6,5 @@ class ProductInWarehouse {
 	Integer quantity
 	Long productId
 	StringBuilder name = new StringBuilder()
-	Double price = 0.01d
+	BigDecimal price = new BigDecimal()
 }

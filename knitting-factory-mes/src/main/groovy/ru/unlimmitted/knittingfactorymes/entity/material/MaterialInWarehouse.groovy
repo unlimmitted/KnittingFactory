@@ -3,7 +3,7 @@ package ru.unlimmitted.knittingfactorymes.entity.material
 class MaterialInWarehouse {
 	Long id
 
-	Integer quantity
+	BigDecimal quantity = new BigDecimal()
 
 	Long material_id
 
@@ -11,6 +11,8 @@ class MaterialInWarehouse {
 
 	StringBuilder typeName = new StringBuilder()
 
-	Double price = 0.01d
+	BigDecimal price = new BigDecimal()
+
+	StringBuilder unitName = new StringBuilder()
 
 }

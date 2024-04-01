@@ -11,10 +11,11 @@ class ProductMapper implements RowMapper<Product> {
 
 	@Override
 	Product mapRow(ResultSet rs, int rowNum) throws SQLException {
-		def recipe = new Product()
-		recipe.id = rs.getLong("id")
-		recipe.name = rs.getString("name")
+		def product = new Product()
+		product.id = rs.getLong("id")
+		product.name = rs.getString("name")
+		product.price = rs.getBigDecimal("price")
 
-		return recipe
+		return product
 	}
 }
