@@ -1,4 +1,8 @@
 spring:
+  task:
+    scheduling:
+      pool:
+        size: 5
   application:
     name: knitting-factory-mes
   datasource:

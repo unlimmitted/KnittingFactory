@@ -3,7 +3,8 @@ package ru.unlimmitted.knittingfactorymes.entity.order
 class OrderInWork {
 
 	Long id
-	Long done
+	Long orderId
+	BigDecimal done
 	Long needToDo
 
 }

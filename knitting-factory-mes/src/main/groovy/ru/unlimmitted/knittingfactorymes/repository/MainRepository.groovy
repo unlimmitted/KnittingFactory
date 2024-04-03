@@ -1,19 +1,17 @@
 package ru.unlimmitted.knittingfactorymes.repository
 
-
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.cglib.core.Local
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import ru.unlimmitted.knittingfactorymes.entity.material.Material
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse
+import ru.unlimmitted.knittingfactorymes.entity.material.MaterialType
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialUnit
 import ru.unlimmitted.knittingfactorymes.entity.order.AcceptedOrder
 import ru.unlimmitted.knittingfactorymes.entity.order.Order
 import ru.unlimmitted.knittingfactorymes.entity.order.OrderInWork
 import ru.unlimmitted.knittingfactorymes.entity.order.OrderToWork
 import ru.unlimmitted.knittingfactorymes.entity.product.Product
-import ru.unlimmitted.knittingfactorymes.entity.material.MaterialType
 import ru.unlimmitted.knittingfactorymes.entity.product.ProductInWarehouse
 import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialInWarehouseMapper
 import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialJoinRecipeMapper
@@ -25,10 +23,6 @@ import ru.unlimmitted.knittingfactorymes.mapper.product.ProductMapper
 
 import java.math.RoundingMode
 import java.sql.Date
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.ZoneOffset
 
 @Repository
 class MainRepository {
@@ -82,7 +76,7 @@ class MainRepository {
 	}
 
 	List<Product> getAllRecipes() {
-		List<Product> products = template.query("SELECT * FROM product", new ProductMapper())
+		List<Product> products = getAllProducts()
 		for (product in products) {
 			product.recipes.addAll(template.query("""
 							|SELECT mat.name, mat.id as "material_id", rec.quantity, mat.type, mat.unit
@@ -115,9 +109,9 @@ class MainRepository {
 	}
 
 	List<Order> getAcceptedOrders() {
-		List <Order> orders = template.query("""
+		List<Order> orders = template.query("""
 							|SELECT * FROM orders
-							|WHERE id in (SELECT order_id FROM accepted_orders)
+							|WHERE id in (SELECT order_id FROM accepted_orders) and in_work = FALSE
 							""".stripMargin(), new OrderMapper())
 		for (order in orders) {
 			order.name.append(template.queryForObject(
@@ -126,9 +120,17 @@ class MainRepository {
 		return orders
 	}
 
-	List<OrderInWork> getAllOrdersInWork () {
+	List<OrderInWork> getAllOrdersInWork() {
 		List<OrderInWork> orderInWork = template.query(
-				"SELECT id, done, need_to_do FROM orders_in_work", new OrderInWorkMapper())
+				"SELECT id, order_id, done, need_to_do FROM orders_in_work",
+				new OrderInWorkMapper())
+		return orderInWork
+	}
+
+	List<OrderInWork> getOrdersInWork() {
+		List<OrderInWork> orderInWork = template.query(
+				"SELECT id, order_id, done, need_to_do FROM orders_in_work ORDER BY priority DESC LIMIT 10",
+				new OrderInWorkMapper())
 		return orderInWork
 	}
 
@@ -136,13 +138,32 @@ class MainRepository {
 		template.update("DELETE FROM orders_in_work WHERE id = ${order.id}")
 	}
 
-	void insertProgressOrderInWork(OrderInWork order){
+	void insertProgressOrderInWork(OrderInWork order) {
 		template.update("UPDATE orders_in_work SET done = ${order.done} WHERE id = ${order.id}")
 	}
 
-	void insertOrderToWork (OrderToWork orderToWork) {
-		template.update("INSERT INTO orders_in_work (order_id) VALUES (${orderToWork.orderId})")
+	void insertOrderToWork(OrderToWork orderToWork) {
+		Order order = template.queryForObject(
+				"SELECT * FROM orders WHERE id = ${orderToWork.orderId}", new OrderMapper())
 
+		def productionTime = template.queryForObject(
+				"SELECT production_time FROM product WHERE id = ${order.productId}", Integer.class)
+
+		Date deadlineDate = new Date(order.deadline.time)
+		def priority = calculatePriority(deadlineDate, order.quantity, productionTime)
+		template.update("UPDATE orders SET in_work = TRUE WHERE id = ${orderToWork.orderId}")
+		template.update("""
+						|INSERT INTO orders_in_work (order_id, priority, need_to_do) 
+						|VALUES (${orderToWork.orderId}, ${priority}, ${productionTime * order.quantity})
+						""".stripMargin())
+	}
+
+	static Integer calculatePriority(def deadline, Integer quantity, Integer productionTime) {
+		Long remainingTime = deadline.time - new java.util.Date().time
+		Integer totalTimeNeeded = quantity * productionTime
+		Double ratio = (double) remainingTime / totalTimeNeeded
+		Integer priority = Math.max(1, Math.min(5, ((1 - ratio) * 5).toInteger()))
+		return priority
 	}
 
 	void insertNewOrder(Order newOrder) {

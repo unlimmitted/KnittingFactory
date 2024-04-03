@@ -56,6 +56,11 @@ class MainController {
 		return ResponseEntity.ok().body(repository.getAcceptedOrders())
 	}
 
+	@GetMapping("/get-all-orders-in-work")
+	ResponseEntity<Object> getAllOrdersInWork() {
+		return ResponseEntity.ok().body(repository.getAllOrdersInWork())
+	}
+
 	@PostMapping("/put-order-to-work")
 	ResponseEntity<Object> putOrderToWork(@RequestBody OrderToWork orderToWork) {
 		repository.insertOrderToWork(orderToWork)

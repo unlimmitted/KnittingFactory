@@ -15,6 +15,7 @@ class ProductMapper implements RowMapper<Product> {
 		product.id = rs.getLong("id")
 		product.name = rs.getString("name")
 		product.price = rs.getBigDecimal("price")
+		product.productionTime = rs.getInt("production_time")
 
 		return product
 	}

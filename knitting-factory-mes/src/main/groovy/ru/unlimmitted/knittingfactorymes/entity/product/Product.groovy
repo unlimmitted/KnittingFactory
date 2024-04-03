@@ -15,6 +15,8 @@ class Product {
 
 	BigDecimal price = 0.01d
 
+	Integer productionTime
+
 	@Override
 	public String toString() {
 		return "Product{id=$id, name='$name', recipes=$recipes}'"
