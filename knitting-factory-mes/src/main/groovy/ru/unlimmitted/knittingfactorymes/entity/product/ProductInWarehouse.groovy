@@ -2,9 +2,9 @@ package ru.unlimmitted.knittingfactorymes.entity.product
 
 
 class ProductInWarehouse {
-	Long id
 	Integer quantity
+	Long orderId
 	Long productId
-	StringBuilder name = new StringBuilder()
-	BigDecimal price = new BigDecimal()
+	String name
+	BigDecimal price
 }

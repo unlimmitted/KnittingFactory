@@ -22,12 +22,17 @@ class MainController {
 
 	@GetMapping("/get-product-in-warehouse")
 	ResponseEntity<Object> getProductInWarehouse() {
-		return ResponseEntity.ok().body(repository.getProductInWarehouse())
+		return ResponseEntity.ok().body(repository.getProductsInWarehouse())
 	}
 
 	@GetMapping("/get-material")
 	ResponseEntity<Object> getMaterial() {
 		return ResponseEntity.ok().body(repository.getMaterialInWarehouse())
+	}
+
+	@GetMapping("/get-completed-orders")
+	ResponseEntity<Object> getCompletedOrders () {
+		return ResponseEntity.ok().body(repository.getCompletedOrders())
 	}
 
 	@PostMapping("/create-recipe")
@@ -59,6 +64,11 @@ class MainController {
 	@GetMapping("/get-all-orders-in-work")
 	ResponseEntity<Object> getAllOrdersInWork() {
 		return ResponseEntity.ok().body(repository.getAllOrdersInWork())
+	}
+
+	@GetMapping("/get-all-orders-in-work-progress")
+	ResponseEntity<Object> getAllOrdersInWorkProgress () {
+		return ResponseEntity.ok().body(repository.getOrdersInWorkJoin())
 	}
 
 	@PostMapping("/put-order-to-work")

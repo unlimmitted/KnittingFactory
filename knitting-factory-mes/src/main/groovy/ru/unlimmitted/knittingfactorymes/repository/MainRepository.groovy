@@ -8,14 +8,18 @@ import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialType
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialUnit
 import ru.unlimmitted.knittingfactorymes.entity.order.AcceptedOrder
+import ru.unlimmitted.knittingfactorymes.entity.order.CompletedOrders
 import ru.unlimmitted.knittingfactorymes.entity.order.Order
 import ru.unlimmitted.knittingfactorymes.entity.order.OrderInWork
+import ru.unlimmitted.knittingfactorymes.entity.order.OrderInWorkJoinOrder
 import ru.unlimmitted.knittingfactorymes.entity.order.OrderToWork
 import ru.unlimmitted.knittingfactorymes.entity.product.Product
 import ru.unlimmitted.knittingfactorymes.entity.product.ProductInWarehouse
 import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialInWarehouseMapper
 import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialJoinRecipeMapper
 import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialMapper
+import ru.unlimmitted.knittingfactorymes.mapper.order.CompletedOrdersMapper
+import ru.unlimmitted.knittingfactorymes.mapper.order.OrderInWorkJoinOrderMapper
 import ru.unlimmitted.knittingfactorymes.mapper.order.OrderInWorkMapper
 import ru.unlimmitted.knittingfactorymes.mapper.order.OrderMapper
 import ru.unlimmitted.knittingfactorymes.mapper.product.ProductInWarehouseMapper
@@ -57,22 +61,6 @@ class MainRepository {
 					"SELECT price FROM material WHERE id = ${material.id}", BigDecimal.class)
 		}
 		return materials
-	}
-
-	List<ProductInWarehouse> getProductInWarehouse() {
-		List<ProductInWarehouse> products = template.query(
-				"SELECT * FROM products_in_warehouse WHERE quantity != 0",
-				new ProductInWarehouseMapper())
-		for (product in products) {
-			product.name.append(
-					template.queryForObject(
-							"SELECT name FROM product WHERE id = ${product.productId}", String.class)
-			)
-			product.price = template.queryForObject(
-					"SELECT price FROM product WHERE id = ${product.productId}",
-					BigDecimal.class)
-		}
-		return products
 	}
 
 	List<Product> getAllRecipes() {
@@ -134,8 +122,46 @@ class MainRepository {
 		return orderInWork
 	}
 
+	List<CompletedOrders> getCompletedOrders () {
+		List<CompletedOrders> orders = template.query("""
+							|SELECT piw.order_id, prd.name, ord.quantity ,ord.deadline, ord.date_of_order, prd.price
+							|FROM products_in_warehouse piw
+							|JOIN orders ord on ord.id = piw.order_id
+							|JOIN product prd on ord.product_id = prd.id
+							""".stripMargin(), new CompletedOrdersMapper())
+		for (order in orders){
+			order.price = order.quantity * order.productPrice
+		}
+		return orders
+	}
+
+	List<ProductInWarehouse> getProductsInWarehouse() {
+		List<ProductInWarehouse> productInWarehouse = template.query("""
+							|SELECT piw.product_id, prd.name, piw.quantity, piw.order_id
+							|FROM products_in_warehouse piw
+							|JOIN product prd on piw.product_id = prd.id
+							""".stripMargin(), new ProductInWarehouseMapper())
+		for (product in productInWarehouse){
+			product.price = product.quantity * (template.queryForObject(
+					"SELECT price from product WHERE id = ${product.productId}", BigDecimal.class))
+					.setScale(2, RoundingMode.CEILING)
+		}
+		return productInWarehouse
+	}
+
 	void finishOrderWork(OrderInWork order) {
 		template.update("DELETE FROM orders_in_work WHERE id = ${order.id}")
+		ProductInWarehouse productInWarehouse = template.queryForObject("""
+							|SELECT ord.id as "order_id", ord.product_id, ord.quantity as "quantity", prd.name
+							|FROM orders ord
+							|JOIN product prd on prd.id = ord.product_id
+							|WHERE ord.id = ${order.orderId}
+							""".stripMargin(), new ProductInWarehouseMapper())
+		template.update(
+				"INSERT INTO products_in_warehouse (quantity, product_id, order_id) VALUES (?, ?, ?)",
+				productInWarehouse.quantity, productInWarehouse.productId, productInWarehouse.orderId
+		)
+
 	}
 
 	void insertProgressOrderInWork(OrderInWork order) {
@@ -158,7 +184,29 @@ class MainRepository {
 						""".stripMargin())
 	}
 
-	static Integer calculatePriority(def deadline, Integer quantity, Integer productionTime) {
+	List<OrderInWorkJoinOrder> getOrdersInWorkJoin() {
+		List<OrderInWorkJoinOrder> orders = template.query("""
+						|SELECT ord.id,ord.quantity, ord.product_id, prd.name, oiw.done, ord.deadline, oiw.need_to_do
+   						|FROM  orders ord
+    					|JOIN orders_in_work oiw on ord.id = oiw.order_id
+    					|JOIN product prd on prd.id = ord.product_id
+    					|WHERE ord.in_work = TRUE
+    					|ORDER BY oiw.priority
+						""".stripMargin(), new OrderInWorkJoinOrderMapper())
+		for (order in orders) {
+			order.done = (
+					template.queryForObject(
+							"SELECT done FROM orders_in_work WHERE order_id = ${order.id}",
+							BigDecimal.class) * 100 / template.queryForObject(
+							"SELECT need_to_do FROM orders_in_work WHERE order_id = ${order.id}",
+							BigDecimal.class)
+			).setScale(2, RoundingMode.CEILING)
+		}
+		return orders
+	}
+
+
+	static Integer calculatePriority(Date deadline, Integer quantity, Integer productionTime) {
 		Long remainingTime = deadline.time - new java.util.Date().time
 		Integer totalTimeNeeded = quantity * productionTime
 		Double ratio = (double) remainingTime / totalTimeNeeded
@@ -182,7 +230,7 @@ class MainRepository {
 
 	void insertRecipe(Product product) {
 
-		template.update("INSERT INTO product (name) values ('$product.name')")
+		template.update("INSERT INTO product (name, production_time) values ('$product.name', ${product.productionTime})")
 		Long product_id = template.queryForObject("SELECT id FROM product WHERE name = '${product.name}'", Long.class)
 
 		for (material in product.recipes) {
