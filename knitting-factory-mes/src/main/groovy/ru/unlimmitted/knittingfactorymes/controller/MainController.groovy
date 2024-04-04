@@ -19,6 +19,10 @@ class MainController {
 	ResponseEntity<Object> main() {
 		return ResponseEntity.ok().body(repository.getAllMaterials())
 	}
+	@GetMapping("/orders")
+	ResponseEntity<Object> getOrdersCollection () {
+		return ResponseEntity.ok().body(repository.getCollectionOrders())
+	}
 
 	@GetMapping("/get-product-in-warehouse")
 	ResponseEntity<Object> getProductInWarehouse() {
@@ -30,9 +34,14 @@ class MainController {
 		return ResponseEntity.ok().body(repository.getMaterialInWarehouse())
 	}
 
-	@GetMapping("/get-completed-orders")
-	ResponseEntity<Object> getCompletedOrders () {
-		return ResponseEntity.ok().body(repository.getCompletedOrders())
+	@GetMapping("/get-all-recipe")
+	ResponseEntity<Object> getAllRecipe() {
+		return ResponseEntity.ok().body(repository.getAllRecipes())
+	}
+
+	@GetMapping("/get-all-products")
+	ResponseEntity<Object> getAllProducts() {
+		return ResponseEntity.ok().body(repository.getAllProducts())
 	}
 
 	@PostMapping("/create-recipe")
@@ -41,40 +50,10 @@ class MainController {
 		return ResponseEntity.ok().body(repository.getAllRecipes())
 	}
 
-	@GetMapping("/get-all-recipe")
-	ResponseEntity<Object> getAllRecipe() {
-		return ResponseEntity.ok().body(repository.getAllRecipes())
-	}
-
-	@GetMapping("/get-all-orders")
-	ResponseEntity<Object> getAllOrders() {
-		return ResponseEntity.ok().body(repository.getAllOrders())
-	}
-
-	@GetMapping("/get-all-products")
-	ResponseEntity<Object> getAllProducts() {
-		return ResponseEntity.ok().body(repository.getAllProducts())
-	}
-
-	@GetMapping("/get-accepted-orders")
-	ResponseEntity<Object> getAcceptedOrders() {
-		return ResponseEntity.ok().body(repository.getAcceptedOrders())
-	}
-
-	@GetMapping("/get-all-orders-in-work")
-	ResponseEntity<Object> getAllOrdersInWork() {
-		return ResponseEntity.ok().body(repository.getAllOrdersInWork())
-	}
-
-	@GetMapping("/get-all-orders-in-work-progress")
-	ResponseEntity<Object> getAllOrdersInWorkProgress () {
-		return ResponseEntity.ok().body(repository.getOrdersInWorkJoin())
-	}
-
 	@PostMapping("/put-order-to-work")
 	ResponseEntity<Object> putOrderToWork(@RequestBody OrderToWork orderToWork) {
 		repository.insertOrderToWork(orderToWork)
-		return ResponseEntity.ok().body(repository.getAcceptedOrders())
+		return ResponseEntity.ok().body([repository.getAcceptedOrders(), repository.getOrdersInWorkJoin()])
 	}
 
 	@PostMapping("/create-new-order")

@@ -14,8 +14,8 @@ class Scheduler {
 	@Autowired
 	MainRepository repository
 
-//	@Scheduled(cron = "0 * * * * *")
-	@Scheduled(cron = "* * * * * *")
+	@Scheduled(cron = "0 * * * * *")
+//	@Scheduled(cron = "* * * * * *")
 	void calculateWorkingProgress() {
 		List<OrderInWork> orders = repository.getOrdersInWork()
 		if (orders.size() !== 0) {

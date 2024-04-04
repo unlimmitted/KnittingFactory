@@ -3,6 +3,7 @@ package ru.unlimmitted.knittingfactorymes.repository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
+import ru.unlimmitted.knittingfactorymes.entity.OrdersCollection
 import ru.unlimmitted.knittingfactorymes.entity.material.Material
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialType
@@ -35,6 +36,18 @@ class MainRepository {
 
 	List<Material> getAllMaterials() {
 		return template.query("SELECT * from material", new MaterialMapper())
+	}
+
+	OrdersCollection getCollectionOrders () {
+		OrdersCollection orders = new OrdersCollection();
+		orders.acceptedOrder.addAll(getAcceptedOrders())
+		orders.completedOrders.addAll(getCompletedOrders())
+		orders.orders.addAll(getAllOrders())
+		orders.orderInWork.addAll(getAllOrdersInWork())
+		orders.orderInWorkJoinOrders.addAll(getOrdersInWorkJoin())
+		orders.orderToWork.addAll()
+
+		return orders
 	}
 
 	List<MaterialInWarehouse> getMaterialInWarehouse() {
