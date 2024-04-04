@@ -39,7 +39,7 @@ class MainRepository {
 	}
 
 	OrdersCollection getCollectionOrders () {
-		OrdersCollection orders = new OrdersCollection();
+		OrdersCollection orders = new OrdersCollection()
 		orders.acceptedOrder.addAll(getAcceptedOrders())
 		orders.completedOrders.addAll(getCompletedOrders())
 		orders.orders.addAll(getAllOrders())
@@ -94,8 +94,8 @@ class MainRepository {
 
 	List<Order> getAllOrders() {
 		List<Order> orders = template.query("""
-							|SELECT * FROM orders
-							|WHERE id not in (SELECT order_id FROM accepted_orders)
+							SELECT * FROM orders
+							WHERE id not in (SELECT order_id FROM accepted_orders)
 							""".stripMargin(), new OrderMapper())
 		for (order in orders) {
 			order.name.append(template.queryForObject(
@@ -111,8 +111,8 @@ class MainRepository {
 
 	List<Order> getAcceptedOrders() {
 		List<Order> orders = template.query("""
-							|SELECT * FROM orders
-							|WHERE id in (SELECT order_id FROM accepted_orders) and in_work = FALSE
+							SELECT * FROM orders
+							WHERE id in (SELECT order_id FROM accepted_orders) and in_work = FALSE
 							""".stripMargin(), new OrderMapper())
 		for (order in orders) {
 			order.name.append(template.queryForObject(
@@ -136,12 +136,13 @@ class MainRepository {
 	}
 
 	List<CompletedOrders> getCompletedOrders () {
-		List<CompletedOrders> orders = template.query("""
-							|SELECT piw.order_id, prd.name, ord.quantity ,ord.deadline, ord.date_of_order, prd.price
-							|FROM products_in_warehouse piw
-							|JOIN orders ord on ord.id = piw.order_id
-							|JOIN product prd on ord.product_id = prd.id
-							""".stripMargin(), new CompletedOrdersMapper())
+		String query = """
+					SELECT piw.order_id, prd.name, ord.quantity ,ord.deadline, ord.date_of_order, prd.price
+					FROM products_in_warehouse piw
+					JOIN orders ord on ord.id = piw.order_id
+					JOIN product prd on ord.product_id = prd.id
+					"""
+		List<CompletedOrders> orders = template.query(query, new CompletedOrdersMapper())
 		for (order in orders){
 			order.price = order.quantity * order.productPrice
 		}
@@ -150,10 +151,10 @@ class MainRepository {
 
 	List<ProductInWarehouse> getProductsInWarehouse() {
 		List<ProductInWarehouse> productInWarehouse = template.query("""
-							|SELECT piw.product_id, prd.name, piw.quantity, piw.order_id
-							|FROM products_in_warehouse piw
-							|JOIN product prd on piw.product_id = prd.id
-							""".stripMargin(), new ProductInWarehouseMapper())
+							SELECT piw.product_id, prd.name, piw.quantity, piw.order_id
+							FROM products_in_warehouse piw
+							JOIN product prd on piw.product_id = prd.id
+							""", new ProductInWarehouseMapper())
 		for (product in productInWarehouse){
 			product.price = product.quantity * (template.queryForObject(
 					"SELECT price from product WHERE id = ${product.productId}", BigDecimal.class))
@@ -199,12 +200,12 @@ class MainRepository {
 
 	List<OrderInWorkJoinOrder> getOrdersInWorkJoin() {
 		List<OrderInWorkJoinOrder> orders = template.query("""
-						|SELECT ord.id,ord.quantity, ord.product_id, prd.name, oiw.done, ord.deadline, oiw.need_to_do
-   						|FROM  orders ord
-    					|JOIN orders_in_work oiw on ord.id = oiw.order_id
-    					|JOIN product prd on prd.id = ord.product_id
-    					|WHERE ord.in_work = TRUE
-    					|ORDER BY oiw.priority
+						SELECT ord.id,ord.quantity, ord.product_id, prd.name, oiw.done, ord.deadline, oiw.need_to_do
+   						FROM  orders ord
+    					JOIN orders_in_work oiw on ord.id = oiw.order_id
+    					JOIN product prd on prd.id = ord.product_id
+    					WHERE ord.in_work = TRUE
+    					ORDER BY oiw.priority
 						""".stripMargin(), new OrderInWorkJoinOrderMapper())
 		for (order in orders) {
 			order.done = (
