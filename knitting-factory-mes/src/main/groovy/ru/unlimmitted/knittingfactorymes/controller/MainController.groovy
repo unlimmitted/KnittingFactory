@@ -2,74 +2,51 @@ package ru.unlimmitted.knittingfactorymes.controller
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
-import ru.unlimmitted.knittingfactorymes.entity.order.AcceptedOrder
-import ru.unlimmitted.knittingfactorymes.entity.order.Order
-import ru.unlimmitted.knittingfactorymes.entity.order.OrderToWork
-import ru.unlimmitted.knittingfactorymes.entity.product.Product
-import ru.unlimmitted.knittingfactorymes.repository.MainRepository
+import org.springframework.security.authentication.AnonymousAuthenticationToken
+import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.CrossOrigin
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
+import ru.unlimmitted.knittingfactorymes.service.AuthService
 
-@RestController
+@Controller
+@RequestMapping
 @CrossOrigin
 class MainController {
+
 	@Autowired
-	MainRepository repository
+	AuthService authService
+
+	@GetMapping("/*")
+	public String getRootRequest() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication()
+		if (!(auth instanceof AnonymousAuthenticationToken)) {
+			return "redirect:/"
+		} else {
+			return "login"
+		}
+	}
+
+	@PostMapping("/login")
+	String login(
+			@RequestParam("username") String login,
+			@RequestParam("password") String password
+	) {
+
+		if (authService.authorizeUser(login, password) != null) {
+			return "main"
+		} else {
+			return "login"
+		}
+
+	}
 
 	@GetMapping("/")
-	ResponseEntity<Object> main() {
-		return ResponseEntity.ok().body(repository.getAllMaterials())
-	}
-	@GetMapping("/orders")
-	ResponseEntity<Object> getOrdersCollection () {
-		return ResponseEntity.ok().body(repository.getCollectionOrders())
-	}
-
-	@GetMapping("/get-orders-stat")
-	ResponseEntity<Object> getOrdersStat() {
-		return ResponseEntity.ok().body(repository.getOrdersStat())
-	}
-
-	@GetMapping("/get-product-in-warehouse")
-	ResponseEntity<Object> getProductInWarehouse() {
-		return ResponseEntity.ok().body(repository.getProductsInWarehouse())
-	}
-
-	@GetMapping("/get-material")
-	ResponseEntity<Object> getMaterial() {
-		return ResponseEntity.ok().body(repository.getMaterialInWarehouse())
-	}
-
-	@GetMapping("/get-all-recipe")
-	ResponseEntity<Object> getAllRecipe() {
-		return ResponseEntity.ok().body(repository.getAllRecipes())
-	}
-
-	@GetMapping("/get-all-products")
-	ResponseEntity<Object> getAllProducts() {
-		return ResponseEntity.ok().body(repository.getAllProducts())
-	}
-
-	@PostMapping("/create-recipe")
-	ResponseEntity<Object> createRecipe(@RequestBody Product newRecipe) {
-		repository.insertRecipe(newRecipe)
-		return ResponseEntity.ok().body(repository.getAllRecipes())
-	}
-
-	@PostMapping("/put-order-to-work")
-	ResponseEntity<Object> putOrderToWork(@RequestBody OrderToWork orderToWork) {
-		repository.insertOrderToWork(orderToWork)
-		return ResponseEntity.ok().body([repository.getAcceptedOrders(), repository.getOrdersInWorkJoin()])
-	}
-
-	@PostMapping("/create-new-order")
-	ResponseEntity<Object> createNewOrder(@RequestBody Order newOrder) {
-		repository.insertNewOrder(newOrder)
-		return ResponseEntity.ok().body(repository.getAllOrders())
-	}
-
-	@PostMapping("/make-order-accepted")
-	ResponseEntity<Object> makeOrderAccepted(@RequestBody AcceptedOrder order) {
-		repository.makeOrderAccepted(order)
-		return ResponseEntity.ok().body([repository.getAllOrders(), repository.getAcceptedOrders()])
+	public String getMainPage() {
+		return "main"
 	}
 }
