@@ -24,6 +24,11 @@ class MainController {
 		return ResponseEntity.ok().body(repository.getCollectionOrders())
 	}
 
+	@GetMapping("/get-orders-stat")
+	ResponseEntity<Object> getOrdersStat() {
+		return ResponseEntity.ok().body(repository.getOrdersStat())
+	}
+
 	@GetMapping("/get-product-in-warehouse")
 	ResponseEntity<Object> getProductInWarehouse() {
 		return ResponseEntity.ok().body(repository.getProductsInWarehouse())

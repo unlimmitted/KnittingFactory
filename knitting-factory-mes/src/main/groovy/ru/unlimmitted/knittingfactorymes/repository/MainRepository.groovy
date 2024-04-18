@@ -25,7 +25,7 @@ import ru.unlimmitted.knittingfactorymes.mapper.order.OrderInWorkMapper
 import ru.unlimmitted.knittingfactorymes.mapper.order.OrderMapper
 import ru.unlimmitted.knittingfactorymes.mapper.product.ProductInWarehouseMapper
 import ru.unlimmitted.knittingfactorymes.mapper.product.ProductMapper
-
+import groovy.time.TimeCategory
 import java.math.RoundingMode
 import java.sql.Date
 
@@ -38,7 +38,7 @@ class MainRepository {
 		return template.query("SELECT * from material", new MaterialMapper())
 	}
 
-	OrdersCollection getCollectionOrders () {
+	OrdersCollection getCollectionOrders() {
 		OrdersCollection orders = new OrdersCollection()
 		orders.acceptedOrder.addAll(getAcceptedOrders())
 		orders.completedOrders.addAll(getCompletedOrders())
@@ -135,7 +135,7 @@ class MainRepository {
 		return orderInWork
 	}
 
-	List<CompletedOrders> getCompletedOrders () {
+	List<CompletedOrders> getCompletedOrders() {
 		String query = """
 					SELECT piw.order_id, prd.name, ord.quantity ,ord.deadline, ord.date_of_order, prd.price
 					FROM products_in_warehouse piw
@@ -143,10 +143,56 @@ class MainRepository {
 					JOIN product prd on ord.product_id = prd.id
 					"""
 		List<CompletedOrders> orders = template.query(query, new CompletedOrdersMapper())
-		for (order in orders){
+		for (order in orders) {
 			order.price = order.quantity * order.productPrice
 		}
 		return orders
+	}
+
+	List<List> getOrdersStat() {
+		return [getOrdersSumPrice(), getCountOrders()]
+	}
+
+	List getOrdersSumPrice() {
+		List<CompletedOrders> orders = getCompletedOrders()
+		List monthlyTotals = []
+
+		def monthlyTotalsMap = [:]
+
+		orders.each { order ->
+			Integer month = order.dateOfOrder.month
+			BigDecimal total = monthlyTotalsMap.getOrDefault(month, BigDecimal.ZERO) as BigDecimal
+			total += order.price
+			monthlyTotalsMap[month] = total
+		}
+
+		for (int i = 0; i < 12; i++) {
+			BigDecimal total = monthlyTotalsMap.getOrDefault(i, BigDecimal.ZERO) as BigDecimal
+			monthlyTotals << total
+		}
+
+		return monthlyTotals
+	}
+
+	List getCountOrders() {
+		List<CompletedOrders> orders = getCompletedOrders()
+		List monthlyCounts = []
+
+		def monthlyCountsMap = [:]
+
+		orders.each { order ->
+			Integer month = order.dateOfOrder.month
+			Integer count = monthlyCountsMap.getOrDefault(month, 0) as Integer
+			count++
+			monthlyCountsMap[month] = count
+		}
+
+		for (int i = 0; i < 12; i++) {
+			Integer count = monthlyCountsMap.getOrDefault(i, 0) as Integer
+			monthlyCounts << count
+		}
+
+		return monthlyCounts
 	}
 
 	List<ProductInWarehouse> getProductsInWarehouse() {
@@ -155,7 +201,7 @@ class MainRepository {
 							FROM products_in_warehouse piw
 							JOIN product prd on piw.product_id = prd.id
 							""", new ProductInWarehouseMapper())
-		for (product in productInWarehouse){
+		for (product in productInWarehouse) {
 			product.price = product.quantity * (template.queryForObject(
 					"SELECT price from product WHERE id = ${product.productId}", BigDecimal.class))
 					.setScale(2, RoundingMode.CEILING)
