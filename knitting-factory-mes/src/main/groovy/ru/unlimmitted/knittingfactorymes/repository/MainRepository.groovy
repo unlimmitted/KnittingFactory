@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import ru.unlimmitted.knittingfactorymes.entity.OrdersCollection
-import ru.unlimmitted.knittingfactorymes.entity.User
+import ru.unlimmitted.knittingfactorymes.entity.user.User
 import ru.unlimmitted.knittingfactorymes.entity.material.Material
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialType
@@ -27,7 +27,7 @@ import ru.unlimmitted.knittingfactorymes.mapper.order.OrderInWorkMapper
 import ru.unlimmitted.knittingfactorymes.mapper.order.OrderMapper
 import ru.unlimmitted.knittingfactorymes.mapper.product.ProductInWarehouseMapper
 import ru.unlimmitted.knittingfactorymes.mapper.product.ProductMapper
-import groovy.time.TimeCategory
+
 import java.math.RoundingMode
 import java.sql.Date
 
@@ -38,11 +38,6 @@ class MainRepository {
 
 	List<Material> getAllMaterials() {
 		return template.query("SELECT * from material", new MaterialMapper())
-	}
-
-	User findByLoginAndPassword (String login, String password) {
-		return template.queryForObject("SELECT * FROM web_users WHERE username = $login and password = $password",
-				new UserMapper())
 	}
 
 	OrdersCollection getCollectionOrders() {

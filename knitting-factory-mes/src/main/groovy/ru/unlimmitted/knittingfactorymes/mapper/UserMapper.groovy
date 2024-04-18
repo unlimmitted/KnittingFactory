@@ -1,6 +1,6 @@
 package ru.unlimmitted.knittingfactorymes.mapper
 
-import ru.unlimmitted.knittingfactorymes.entity.User
+import ru.unlimmitted.knittingfactorymes.entity.user.User
 
 import org.springframework.jdbc.core.RowMapper
 

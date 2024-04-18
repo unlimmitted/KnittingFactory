@@ -9,6 +9,10 @@ spring:
     url: jdbc:postgresql://localhost:5432/knitting_factory?currentSchema=knitting_factory_mes
     username: postgres
     password: postgres
-  security:
-    user:
-      password: kazantip2009
+  jpa:
+    generate-ddl: true
+    properties:
+      hibernate:
+        format_sql: true
+        hbm2ddl:
+          create_namespaces: true
