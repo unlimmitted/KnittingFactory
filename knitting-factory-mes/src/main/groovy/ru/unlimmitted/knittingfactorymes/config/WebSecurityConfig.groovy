@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache
+import ru.unlimmitted.knittingfactorymes.service.MyUserDetailsService
 
 @Configuration
 @EnableWebSecurity
@@ -43,7 +44,7 @@ class WebSecurityConfig {
 		return http
 				.csrf { it.disable() }
 				.cors { it.disable() }
-				.authorizeHttpRequests { it.anyRequest().authenticated() }
+				.authorizeHttpRequests { it.anyRequest().permitAll() }
 				.requestCache { it.requestCache(new HttpSessionRequestCache()) }
 				.formLogin(Customizer.withDefaults())
 				.logout { it.permitAll() }
