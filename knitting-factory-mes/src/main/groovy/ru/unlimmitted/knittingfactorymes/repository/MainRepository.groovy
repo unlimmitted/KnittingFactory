@@ -39,9 +39,8 @@ class MainRepository {
 		orders.completedOrders.addAll(getCompletedOrders())
 		orders.orders.addAll(getAllOrders())
 		orders.orderInWork.addAll(getAllOrdersInWork())
-		orders.orderInWorkJoinOrders.addAll(getOrdersInWorkJoin())
 		orders.orderToWork.addAll()
-
+		orders.ordersStats.addAll(getOrdersStat())
 		return orders
 	}
 
@@ -217,7 +216,7 @@ class MainRepository {
 				productInWarehouse.quantity, productInWarehouse.productId, productInWarehouse.orderId
 		)
 		template.update("INSERT INTO completed_orders (order_id) VALUES (?)",
-				(order.id))
+				(order.orderId))
 
 	}
 

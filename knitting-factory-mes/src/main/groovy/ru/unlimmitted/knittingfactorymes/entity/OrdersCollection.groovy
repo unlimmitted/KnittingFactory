@@ -13,6 +13,6 @@ class OrdersCollection {
 	List<CompletedOrders> completedOrders = new ArrayList<CompletedOrders>()
 	List<Order> orders = new ArrayList<Order>()
 	List<OrderInWork> orderInWork = new ArrayList<OrderInWork>()
-	List<OrderInWorkJoinOrder> orderInWorkJoinOrders = new ArrayList<OrderInWorkJoinOrder>()
 	List<OrderToWork> orderToWork = new ArrayList<OrderToWork>()
+	List<List> ordersStats = new ArrayList<>()
 }

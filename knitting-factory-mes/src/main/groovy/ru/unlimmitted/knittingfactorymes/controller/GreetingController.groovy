@@ -16,7 +16,7 @@ class GreetingController {
 	MainRepository repository
 
 	@MessageMapping("/app/greeting")
-	@SendTo("/topic/activity")
+	@SendTo("/topic/orders")
 	List<OrderInWork> greeting() throws Exception {
 		List<OrderInWork> orders = repository.getAllOrdersInWork()
 		return orders

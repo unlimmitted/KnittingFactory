@@ -14,11 +14,7 @@ class Scheduler {
 	@Autowired
 	MainRepository repository
 
-	@Autowired
-	SocketService socketService
-
-//	@Scheduled(cron = "0 * * * * *")
-	@Scheduled(cron = "* * * * * *")
+	@Scheduled(cron = "0 * * * * *")
 	void calculateWorkingProgress() {
 		List<OrderInWork> orders = repository.getOrdersInWork()
 		if (orders.size() !== 0) {
@@ -26,13 +22,11 @@ class Scheduler {
 				if (order.done < order.needToDo) {
 					(order.done += 1 / orders.size()).setScale(2, RoundingMode.CEILING)
 					repository.insertProgressOrderInWork(order)
-					socketService.sendOrdersProgressToFront(repository.getOrdersInWorkJoin())
 				} else if (order.done >= order.needToDo) {
 					repository.finishOrderWork(order)
 				}
 			}
 		}
-
 	}
 
 }
