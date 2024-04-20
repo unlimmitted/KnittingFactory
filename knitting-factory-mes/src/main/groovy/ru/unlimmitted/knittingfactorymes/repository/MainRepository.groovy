@@ -4,20 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import ru.unlimmitted.knittingfactorymes.entity.OrdersCollection
-import ru.unlimmitted.knittingfactorymes.entity.user.User
 import ru.unlimmitted.knittingfactorymes.entity.material.Material
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialType
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialUnit
-import ru.unlimmitted.knittingfactorymes.entity.order.AcceptedOrder
-import ru.unlimmitted.knittingfactorymes.entity.order.CompletedOrders
-import ru.unlimmitted.knittingfactorymes.entity.order.Order
-import ru.unlimmitted.knittingfactorymes.entity.order.OrderInWork
-import ru.unlimmitted.knittingfactorymes.entity.order.OrderInWorkJoinOrder
-import ru.unlimmitted.knittingfactorymes.entity.order.OrderToWork
+import ru.unlimmitted.knittingfactorymes.entity.order.*
 import ru.unlimmitted.knittingfactorymes.entity.product.Product
 import ru.unlimmitted.knittingfactorymes.entity.product.ProductInWarehouse
-import ru.unlimmitted.knittingfactorymes.mapper.UserMapper
 import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialInWarehouseMapper
 import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialJoinRecipeMapper
 import ru.unlimmitted.knittingfactorymes.mapper.material.MaterialMapper
@@ -57,23 +50,22 @@ class MainRepository {
 				"SELECT * FROM materials_in_warehouse", new MaterialInWarehouseMapper())
 		for (material in materials) {
 			material.name.append(template.queryForObject(
-					"SELECT name FROM material WHERE id = ${material.id}", String.class)
-			)
+					"SELECT name FROM material WHERE id = ${material.material_id}", String.class))
 			material.typeName.append(
 					(MaterialType.values().find {
 						it.ordinal() == (template.queryForObject(
-								"SELECT type FROM material WHERE id = ${material.id}", Integer.class))
+								"SELECT type FROM material WHERE id = ${material.material_id}", Integer.class))
 					}).typeName
 			)
 			material.unitName.append(
 					(MaterialUnit.values().find {
 						it.ordinal() == (template.queryForObject(
-								"SELECT unit FROM material WHERE id ${material.id}", Integer.class)
+								"SELECT unit FROM material WHERE id = ${material.material_id}", Integer.class)
 						)
 					}).unitName
 			)
 			material.price = material.quantity * template.queryForObject(
-					"SELECT price FROM material WHERE id = ${material.id}", BigDecimal.class)
+					"SELECT price FROM material WHERE id = ${material.material_id}", BigDecimal.class)
 		}
 		return materials
 	}
@@ -139,10 +131,11 @@ class MainRepository {
 
 	List<CompletedOrders> getCompletedOrders() {
 		String query = """
-					SELECT piw.order_id, prd.name, ord.quantity ,ord.deadline, ord.date_of_order, prd.price
-					FROM products_in_warehouse piw
-					JOIN orders ord on ord.id = piw.order_id
+					SELECT ord.id, prd.name, ord.quantity ,ord.deadline, ord.date_of_order, prd.price
+					FROM orders ord
 					JOIN product prd on ord.product_id = prd.id
+					JOIN completed_orders on ord.id = completed_orders.order_id
+					WHERE ord.id = completed_orders.order_id
 					"""
 		List<CompletedOrders> orders = template.query(query, new CompletedOrdersMapper())
 		for (order in orders) {
@@ -223,6 +216,8 @@ class MainRepository {
 				"INSERT INTO products_in_warehouse (quantity, product_id, order_id) VALUES (?, ?, ?)",
 				productInWarehouse.quantity, productInWarehouse.productId, productInWarehouse.orderId
 		)
+		template.update("INSERT INTO completed_orders (order_id) VALUES (?)",
+				(order.id))
 
 	}
 

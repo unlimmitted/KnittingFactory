@@ -43,9 +43,10 @@ class WebSecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		return http
 				.csrf { it.disable() }
-				.cors { it.disable() }
-				.authorizeHttpRequests { it.anyRequest().permitAll() }
+				.authorizeHttpRequests { it.requestMatchers("/js/", "/css/").permitAll()
+						.anyRequest().permitAll()}
 				.requestCache { it.requestCache(new HttpSessionRequestCache()) }
+				.cors { it.disable() }
 				.formLogin(Customizer.withDefaults())
 				.logout { it.permitAll() }
 				.build()
