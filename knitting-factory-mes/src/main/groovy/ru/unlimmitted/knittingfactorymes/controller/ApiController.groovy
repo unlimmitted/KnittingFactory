@@ -3,6 +3,8 @@ package ru.unlimmitted.knittingfactorymes.controller
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import ru.unlimmitted.knittingfactorymes.entity.material.Material
+import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse
 import ru.unlimmitted.knittingfactorymes.entity.order.Order
 import ru.unlimmitted.knittingfactorymes.entity.order.OrderInWork
 import ru.unlimmitted.knittingfactorymes.entity.recipe.Recipe
@@ -61,7 +63,8 @@ class ApiController {
 	@GetMapping("/get-material-in-warehouse")
 	ResponseEntity<Object> getMaterial() {
 		return ResponseEntity.ok().body(materialInWarehouseRepository.findAll()
-				.each { it.material.typeName = it.material.type.typeName })
+				.each { it.material.typeName = it.material.type.typeName }
+				.each { it.material.unitName = it.material.unit.unitName })
 	}
 
 	@GetMapping("/get-product-in-warehouse")
@@ -105,5 +108,10 @@ class ApiController {
 		orderToWork.needToDo = order.product.productionTime * order.quantity
 		orderRepository.save(order)
 		orderInWorkRepository.save(orderToWork)
+	}
+
+	@PostMapping("/ordering-material")
+	void orderingMaterial(@RequestBody MaterialInWarehouse material) {
+		materialInWarehouseRepository.save(material)
 	}
 }

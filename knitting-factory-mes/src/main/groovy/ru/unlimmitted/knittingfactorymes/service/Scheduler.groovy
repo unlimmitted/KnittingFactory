@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service
 import ru.unlimmitted.knittingfactorymes.entity.order.Order
 import ru.unlimmitted.knittingfactorymes.entity.order.OrderCollection
 import ru.unlimmitted.knittingfactorymes.entity.order.OrderInWork
+import ru.unlimmitted.knittingfactorymes.entity.product.ProductInWarehouse
 import ru.unlimmitted.knittingfactorymes.repository.OrderInWorkRepository
 import ru.unlimmitted.knittingfactorymes.repository.OrderRepository
+import ru.unlimmitted.knittingfactorymes.repository.ProductInWarehouseRepository
 
 import java.math.RoundingMode
 
@@ -26,6 +28,9 @@ class Scheduler {
 	@Autowired
 	OrdersStatService ordersStatService
 
+	@Autowired
+	ProductInWarehouseRepository productInWarehouseRepository
+
 	@Scheduled(cron = "0 * * * * *")
 	void calculateWorkingProgress() {
 		List<OrderInWork> ordersInWork = orderInWorkRepository.getPriorityOrders()
@@ -41,6 +46,11 @@ class Scheduler {
 						order.get().isCompleted = true
 						order.get().inWork = false
 						orderRepository.save(order.get())
+						ProductInWarehouse product = new ProductInWarehouse()
+						product.quantity = order.get().quantity
+						product.order = order.get()
+						product.product = order.get().product
+						productInWarehouseRepository.save(product)
 					}
 				}
 			}

@@ -9,6 +9,6 @@ import ru.unlimmitted.knittingfactorymes.entity.order.OrderInWork
 @Repository
 interface OrderInWorkRepository extends JpaRepository<OrderInWork, Long> {
 
-	@Query(value = "SELECT * FROM order_in_work LIMIT 10", nativeQuery = true)
+	@Query(value = "SELECT * FROM order_in_work ORDER BY id LIMIT 10", nativeQuery = true)
 	List<OrderInWork> getPriorityOrders()
 }
