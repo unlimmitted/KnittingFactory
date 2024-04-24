@@ -1,10 +1,25 @@
 package ru.unlimmitted.knittingfactorymes.entity.order
 
-class OrderInWork {
+import jakarta.persistence.*
 
+@Entity
+@Table(name = "order_in_work")
+class OrderInWork {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id
-	Long orderId
+
+	@OneToOne(
+			fetch = FetchType.EAGER,
+			targetEntity = Order.class)
+	Order order
+
 	BigDecimal done
+
 	Long needToDo
+
+	OrderInWork() {
+
+	}
 
 }

@@ -6,7 +6,7 @@ spring:
   application:
     name: knitting-factory-mes
   datasource:
-    url: jdbc:postgresql://localhost:5432/knitting_factory?currentSchema=knitting_factory_mes
+    url: jdbc:postgresql://localhost:5432/knitting_factory?currentSchema=knitting_factory
     username: postgres
     password: postgres
   jpa:

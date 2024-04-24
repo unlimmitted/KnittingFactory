@@ -1,19 +1,28 @@
 package ru.unlimmitted.knittingfactorymes.entity.recipe
 
-import jakarta.persistence.Id
+import jakarta.persistence.*
+import ru.unlimmitted.knittingfactorymes.entity.product.Product
 
+@Entity
+@Table(name = "recipe")
 class Recipe {
 	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	Long id
 
-	Long material_id
+	@OneToMany(
+			cascade=CascadeType.ALL,
+			fetch = FetchType.EAGER,
+			targetEntity = RecipePart.class)
+	List<RecipePart> material
 
-	BigDecimal quantity = new BigDecimal()
+	@ManyToOne(
+			cascade=CascadeType.ALL,
+			fetch = FetchType.EAGER,
+			targetEntity = Product.class)
+	Product products
 
-	Long recipe_id
+	Recipe() {
 
-	@Override
-	public String toString() {
-		return "Recipe{id=$id, material_id=$material_id, quantity=$quantity, recipe_id=$recipe_id'}'"
 	}
 }
