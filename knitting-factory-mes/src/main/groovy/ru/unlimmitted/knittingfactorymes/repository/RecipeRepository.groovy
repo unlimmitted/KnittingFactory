@@ -7,4 +7,6 @@ import ru.unlimmitted.knittingfactorymes.entity.recipe.Recipe
 @Repository
 interface RecipeRepository extends JpaRepository<Recipe, Long>{
 
+	Recipe findByProductsId(Long id)
+
 }

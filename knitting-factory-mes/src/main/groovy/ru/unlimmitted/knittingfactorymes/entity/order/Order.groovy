@@ -12,7 +12,7 @@ class Order {
 
 	@PrimaryKeyJoinColumn
 	@ManyToOne(
-			cascade=CascadeType.PERSIST,
+			cascade=CascadeType.MERGE,
 			fetch = FetchType.EAGER,
 			targetEntity = Product.class)
 	Product product

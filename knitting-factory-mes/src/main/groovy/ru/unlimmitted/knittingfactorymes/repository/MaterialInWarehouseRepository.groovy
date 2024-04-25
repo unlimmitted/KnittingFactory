@@ -6,5 +6,5 @@ import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse
 
 @Repository
 interface MaterialInWarehouseRepository extends JpaRepository<MaterialInWarehouse, Long> {
-
+	MaterialInWarehouse findByMaterialId(Long id)
 }

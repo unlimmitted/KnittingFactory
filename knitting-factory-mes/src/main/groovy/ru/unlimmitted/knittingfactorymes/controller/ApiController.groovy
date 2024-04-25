@@ -7,6 +7,7 @@ import ru.unlimmitted.knittingfactorymes.entity.material.Material
 import ru.unlimmitted.knittingfactorymes.entity.material.MaterialInWarehouse
 import ru.unlimmitted.knittingfactorymes.entity.order.Order
 import ru.unlimmitted.knittingfactorymes.entity.order.OrderInWork
+import ru.unlimmitted.knittingfactorymes.entity.product.Product
 import ru.unlimmitted.knittingfactorymes.entity.recipe.Recipe
 import ru.unlimmitted.knittingfactorymes.repository.*
 
@@ -55,6 +56,13 @@ class ApiController {
 				.each { it.material.each { it.material.typeName = it.material.type.typeName } })
 	}
 
+	@PostMapping("/get-recipe-by-product")
+	ResponseEntity<Object> getRecipeByProduct(@RequestBody Product product) {
+		return ResponseEntity.ok().body(recipeRepository.findByProductsId(product.id)
+				.each { it.material.each { it.material.unitName = it.material.unit.unitName } }
+				.each { it.material.each { it.material.typeName = it.material.type.typeName } })
+	}
+
 	@GetMapping("/get-all-orders")
 	ResponseEntity<Object> getOrdersCollection() {
 		return ResponseEntity.ok().body(orderRepository.findAll())
@@ -65,6 +73,11 @@ class ApiController {
 		return ResponseEntity.ok().body(materialInWarehouseRepository.findAll()
 				.each { it.material.typeName = it.material.type.typeName }
 				.each { it.material.unitName = it.material.unit.unitName })
+	}
+
+	@PostMapping("/get-material-in-warehouse-by-material")
+	ResponseEntity<Object> getMaterialInWarehouseByMaterial (@RequestBody Material material) {
+		return ResponseEntity.ok().body(materialInWarehouseRepository.findByMaterialId(material.id))
 	}
 
 	@GetMapping("/get-product-in-warehouse")
