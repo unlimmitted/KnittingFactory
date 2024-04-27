@@ -44,7 +44,7 @@ class WebSecurityConfig {
 		return http
 				.csrf { it.disable() }
 				.authorizeHttpRequests { it.requestMatchers("/js/", "/css/").permitAll()
-						.anyRequest().permitAll()}
+						.anyRequest().authenticated()}
 				.requestCache { it.requestCache(new HttpSessionRequestCache()) }
 				.cors { it.disable() }
 				.formLogin(Customizer.withDefaults())
