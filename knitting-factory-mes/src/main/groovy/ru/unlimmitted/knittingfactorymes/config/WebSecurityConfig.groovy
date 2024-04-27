@@ -41,13 +41,17 @@ class WebSecurityConfig {
 
 	@Bean
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		HttpSessionRequestCache requestCache = new HttpSessionRequestCache()
+		requestCache.setMatchingRequestParameterName(null)
 		return http
 				.csrf { it.disable() }
 				.authorizeHttpRequests { it.requestMatchers("/js/", "/css/").permitAll()
 						.anyRequest().authenticated()}
-				.requestCache { it.requestCache(new HttpSessionRequestCache()) }
+				.requestCache((cache) -> cache
+						.requestCache(requestCache))
 				.cors { it.disable() }
-				.formLogin(Customizer.withDefaults())
+				.formLogin(form -> form
+						.defaultSuccessUrl("/", true))
 				.logout { it.permitAll() }
 				.build()
 	}

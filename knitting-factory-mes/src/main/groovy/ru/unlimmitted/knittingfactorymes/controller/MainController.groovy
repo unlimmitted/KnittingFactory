@@ -9,12 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping
 @CrossOrigin
 class MainController {
 
-	@GetMapping("{path:[^\\\\.]*}")
-	String catchAllPath() {
-		return "main"
-	}
-
-	@GetMapping("/")
+	@GetMapping("")
 	String getMainPage() {
 		return "main"
 	}
