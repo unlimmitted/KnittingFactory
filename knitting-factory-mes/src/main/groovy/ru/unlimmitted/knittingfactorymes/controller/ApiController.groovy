@@ -124,7 +124,12 @@ class ApiController {
 	}
 
 	@PostMapping("/ordering-material")
-	void orderingMaterial(@RequestBody MaterialInWarehouse material) {
+	List<MaterialInWarehouse> orderingMaterial(@RequestBody MaterialInWarehouse material) {
+		MaterialInWarehouse materialInWarehouse = materialInWarehouseRepository.findByMaterialId(material.material.id)
+		material.quantity = material.quantity + materialInWarehouse.quantity
 		materialInWarehouseRepository.save(material)
+		return materialInWarehouseRepository.findAll()
+				.each { it.material.typeName = it.material.type.typeName }
+				.each { it.material.unitName = it.material.unit.unitName }
 	}
 }

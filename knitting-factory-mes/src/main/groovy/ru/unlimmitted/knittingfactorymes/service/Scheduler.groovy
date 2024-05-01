@@ -32,6 +32,7 @@ class Scheduler {
 	ProductInWarehouseRepository productInWarehouseRepository
 
 	@Scheduled(cron = "0 * * * * *")
+//	@Scheduled(cron = "* * * * * *")
 	void calculateWorkingProgress() {
 		List<OrderInWork> ordersInWork = orderInWorkRepository.getPriorityOrders()
 		if (ordersInWork.size() !== 0) {
