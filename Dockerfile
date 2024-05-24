@@ -1,5 +1,18 @@
+FROM node:lts-alpine as nodejs
+RUN apk add --no-cache git
+WORKDIR /usr/src/node
+RUN git clone https://github.com/unlimmitted/knitting-factory-front.git
+WORKDIR /usr/src/node/knitting-factory-front
+RUN npm install vite
+RUN npm install
+RUN npm run build
+
 FROM gradle:8.7.0-jdk21-alpine AS gradle
 COPY --chown=gradle:gradle . /home/gradle/
+
+COPY --from=nodejs /usr/src/node/knitting-factory-front/dist/static/index.js /home/gradle/src/main/webapp/js/index.js
+COPY --from=nodejs /usr/src/node/knitting-factory-front/dist/static/vendor.js /home/gradle/src/main/webapp/js/vendor.js
+COPY --from=nodejs /usr/src/node/knitting-factory-front/dist/static/index.css /home/gradle/src/main/webapp/css/index.css
 WORKDIR /home/gradle/
 RUN gradle war
 
