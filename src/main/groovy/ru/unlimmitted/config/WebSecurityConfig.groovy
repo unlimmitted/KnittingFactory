@@ -46,7 +46,7 @@ class WebSecurityConfig {
 		return http
 				.csrf { it.disable() }
 				.authorizeHttpRequests { it.requestMatchers("/js/", "/css/").permitAll()
-						.anyRequest().authenticated()}
+						.anyRequest().permitAll()}
 				.requestCache((cache) -> cache
 						.requestCache(requestCache))
 				.cors { it.disable() }

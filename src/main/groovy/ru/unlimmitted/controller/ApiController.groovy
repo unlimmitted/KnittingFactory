@@ -3,11 +3,13 @@ package ru.unlimmitted.controller
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import ru.unlimmitted.entity.customer.Customer
 import ru.unlimmitted.entity.material.Material
 import ru.unlimmitted.entity.material.MaterialInWarehouse
 import ru.unlimmitted.entity.order.Order
 import ru.unlimmitted.entity.order.OrderInWork
 import ru.unlimmitted.entity.product.Product
+import ru.unlimmitted.entity.provider.Provider
 import ru.unlimmitted.entity.recipe.Recipe
 import ru.unlimmitted.repository.*
 
@@ -36,6 +38,12 @@ class ApiController {
 
 	@Autowired
 	OrderInWorkRepository orderInWorkRepository
+
+	@Autowired
+	ProviderRepository providerRepository
+
+	@Autowired
+	CustomerRepository customerRepository
 
 	@GetMapping("/get-all-material")
 	ResponseEntity<Object> main() {
@@ -75,8 +83,32 @@ class ApiController {
 				.each { it.material.unitName = it.material.unit.unitName })
 	}
 
+	@GetMapping("/get-all-providers")
+	ResponseEntity<Object> getAllProviders() {
+		return ResponseEntity.ok().body(providerRepository.findAll()
+				.each { it.material.each { it.material.unitName = it.material.unit.unitName } }
+				.each { it.material.each { it.material.typeName = it.material.type.typeName } })
+	}
+
+	@PostMapping('/set-new-provider')
+	ResponseEntity<Object> setNewProvider(@RequestBody Provider provider) {
+		providerRepository.save(provider)
+		ResponseEntity.ok().body(providerRepository.findAll())
+	}
+
+	@GetMapping('/get-customers')
+	ResponseEntity<Object> getCustomers() {
+		return ResponseEntity.ok().body(customerRepository.findAll())
+	}
+
+	@PostMapping('/set-customer')
+	ResponseEntity<Object> setCustomer(@RequestBody Customer customer) {
+		customerRepository.save(customer)
+		return ResponseEntity.ok().body(customerRepository.findAll())
+	}
+
 	@PostMapping("/get-material-in-warehouse-by-material")
-	ResponseEntity<Object> getMaterialInWarehouseByMaterial (@RequestBody Material material) {
+	ResponseEntity<Object> getMaterialInWarehouseByMaterial(@RequestBody Material material) {
 		return ResponseEntity.ok().body(materialInWarehouseRepository.findByMaterialId(material.id))
 	}
 
@@ -102,8 +134,9 @@ class ApiController {
 	}
 
 	@PostMapping("/create-new-order")
-	void createNewOrder(@RequestBody Order newOrder) {
-		orderRepository.save(newOrder)
+	void createNewOrder(@RequestBody Customer newOrder) {
+		orderRepository.save(newOrder.orders)
+		customerRepository.save(newOrder)
 	}
 
 	@PostMapping("/make-order-accepted")
